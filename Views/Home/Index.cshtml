@@ -1,0 +1,41 @@
+﻿@model dotnetmvc.Models.AskQuestion
+@{
+    ViewData["Title"] = "Home Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Welcome to RAG Chat</h1>
+</div>
+<div class="container py-150">
+    <p>Ask Question</p>
+    <form method="post">
+        <div class="mb-3">
+            <input type="text" class="form-control" id="question" name="question" asp-for="Question"/>
+        </div>
+        <div class="mb-3">
+            <button type="submit" class="btn btn-dark" id="ask"/>Ask</button>
+        </div>
+        
+        <div class="mt-20">
+            <p>Answer</p>
+            <textarea name="answer" id="answer-area" class="form-control"  cols="20" rows="15" type="text" placeholder="Answer" asp-for="Answer"></textarea>
+        </div>
+    </form>
+</div>
+
+
+<script>
+    document.getElementById("ask") 
+        .addEventListener("click", function() { 
+            document.body.style.cursor = "wait"; 
+
+            document.getElementById("ask") 
+                .style.backgroundColor = "gray"; 
+
+            document.getElementById("ask") 
+                .style.cursor = "wait";
+
+            document.getElementById("answer-area") 
+                .style.cursor = "wait"; 
+        }); 
+</script>
