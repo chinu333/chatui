@@ -26,7 +26,7 @@ public class HomeController : Controller
     {
         var question = Request.Form["question"];
         // string url = "http://localhost:7071/api/MyChatFunction";
-        string url = "https://ragchatfunc.azurewebsites.net/api/MyChatFunction?code=JO9dslnIm5VksWlFmr0MaaWIcWzFTkjt74GTRcUB0SQcAzFuhCB8KQ==";
+        string url = "";
 
         Console.WriteLine("Question from the model :: " + q.Question);
         ModelState.Clear();
