@@ -1,16 +1,42 @@
-﻿@model dotnetmvc.Models.AskQuestion
+@model dotnetmvc.Models.AskQuestion
 @{
     ViewData["Title"] = "Home Page";
 }
 
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+<script src="https://cdn.jsdelivr.net/npm/microsoft-cognitiveservices-speech-sdk/distrib/browser/microsoft.cognitiveservices.speech.sdk.bundle.js"></script>
+
 <div class="text-center">
     <h1 class="display-4">Welcome to RAG Chat</h1>
 </div>
-<div class="container py-150">
-    <p>Ask Question</p>
+<div class="container py-150" style="padding-top:35px">
     <form method="post">
         <div class="mb-3">
-            <input type="text" class="form-control" id="question" name="question" asp-for="Question"/>
+            <table style="width:1270px;height:50px;">
+                <tr>
+                    <td style="width:8%">
+                        <p>Ask Question</p>
+                    </td>
+                    <td style="width:2%">
+                        <p><button type="button" id="microphone" style="font-size:18px;border-width:0;text-align:right;color:red"><i class="fa fa-microphone"></i></button></p>
+                    </td>
+                    <td style="width:25%;text-align:right">
+                        <input type="radio" id="phi" name="languagemodel" value="phi"  asp-for="LanguageModel">
+                        <label for="phi">Phi</label>
+                        <input type="radio" id="gpt4o" name="languagemodel" value="gpt4o" asp-for="LanguageModel">
+                        <label for="gpt4o">Gpt-4o</label>
+                    </td>
+                    <td style="width:15%; text-align:right">
+                        <p style="margin-right:5px;">Image URL</p>
+                    </td>
+                    <td style="width:50%">
+                        <p><input type="text" class="form-control" id="imageurl" name="imageurl" asp-for="ImageURL"/></p>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="mb-3">
+            <textarea name="question" id="question" class="form-control"  cols="20" rows="8" type="text" placeholder="Question" asp-for="Question"></textarea>
         </div>
         <div class="mb-3">
             <button type="submit" class="btn btn-dark" id="ask"/>Ask</button>
@@ -18,11 +44,10 @@
         
         <div class="mt-20">
             <p>Answer</p>
-            <textarea name="answer" id="answer-area" class="form-control"  cols="20" rows="15" type="text" placeholder="Answer" asp-for="Answer"></textarea>
+            <textarea name="answer" id="answer-area" class="form-control"  cols="20" rows="12" type="text" placeholder="Answer" asp-for="Answer"></textarea>
         </div>
     </form>
 </div>
-
 
 <script>
     document.getElementById("ask") 
@@ -35,7 +60,57 @@
             document.getElementById("ask") 
                 .style.cursor = "wait";
 
+            document.getElementById("question") 
+                .style.cursor = "wait";
+
+            document.getElementById("answer-area") .value = "";
+
             document.getElementById("answer-area") 
                 .style.cursor = "wait"; 
-        }); 
+        });
+
+        document.addEventListener("DOMContentLoaded", function() {
+            var SpeechSDK = window.SpeechSDK;
+
+            if(!! window.SpeechSDK) {
+                SpeechSDK = window.SpeechSDK;
+            }
+            
+
+            document.getElementById("microphone").addEventListener("click", function(){
+                const speechConfig = SpeechSDK.SpeechTranslationConfig.fromSubscription('key', 'region');
+                speechConfig.speechRecognitionLanguage = "en-US";
+
+                
+                // let audioConfig = sdk.AudioConfig.fromWavFileInput(fs.readFileSync("YourAudioFile.wav"));
+                let audioConfig = SpeechSDK.AudioConfig.fromDefaultMicrophoneInput();
+                let speechRecognizer = new SpeechSDK.SpeechRecognizer(speechConfig, audioConfig);
+
+                speechRecognizer.recognizeOnceAsync(result => {
+                    // alert(result.text);
+                    document.getElementById("question").value = result.text;
+                    document.getElementById("ask").click();
+
+                    switch (result.reason) {
+                        case sdk.ResultReason.RecognizedSpeech:
+                            console.log(`RECOGNIZED: Text=${result.text}`);
+                            break;
+                        case sdk.ResultReason.NoMatch:
+                            console.log("NOMATCH: Speech could not be recognized.");
+                            break;
+                        case sdk.ResultReason.Canceled:
+                            const cancellation = sdk.CancellationDetails.fromResult(result);
+                            console.log(`CANCELED: Reason=${cancellation.reason}`);
+
+                            if (cancellation.reason == sdk.CancellationReason.Error) {
+                                console.log(`CANCELED: ErrorCode=${cancellation.ErrorCode}`);
+                                console.log(`CANCELED: ErrorDetails=${cancellation.errorDetails}`);
+                                console.log("CANCELED: Did you set the speech resource key and region values?");
+                            }
+                            break;
+                    }
+                    speechRecognizer.close();
+                });
+            }); 
+        });  
 </script>
